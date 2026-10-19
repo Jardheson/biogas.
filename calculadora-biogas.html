@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de biogás — resíduos sólidos/orgânicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* superfícies */
+    --nevoa:#F1F4EE;
+    --casca:#E5EADF;
+    --borda:#D2DACA;
+    --branco:#FFFFFF;
+    /* tinta */
+    --fibra:#22302A;
+    --fibra-2:#4C5B54;
+    --fibra-3:#7A8880;
+    /* cor de dado */
+    --fermento:#2F7D4F;   /* biogás  */
+    --chama:#2F5BD8;      /* metano  */
+    --brasa:#DA8412;      /* energia */
+    --alerta:#A93B32;
+
+    --fonte:"Poppins",-apple-system,"Segoe UI",Roboto,sans-serif;
+    --r-card:16px;
+    --r-campo:10px;
+    --r-pill:999px;
+    --sombra:0 1px 2px rgba(34,48,42,.05), 0 8px 24px -14px rgba(34,48,42,.28);
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    font-family:var(--fonte);
+    font-weight:400;
+    font-size:15px;
+    line-height:1.55;
+    color:var(--fibra);
+    background:
+      radial-gradient(120% 70% at 85% -10%, #E4EEE4 0%, rgba(228,238,228,0) 60%),
+      radial-gradient(90% 60% at -10% 0%, #EAF0F6 0%, rgba(234,240,246,0) 55%),
+      var(--nevoa);
+    background-attachment:fixed;
+  }
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+
+  .envolucro{max-width:1180px;margin:0 auto;padding:0 26px 80px;}
+
+  /* ================= cabeçalho ================= */
+  .topo{padding:52px 0 34px;}
+  .selo{
+    display:inline-flex;align-items:center;gap:9px;
+    background:var(--branco);border:1px solid var(--borda);
+    border-radius:var(--r-pill);padding:6px 15px 6px 11px;
+    font-size:12px;font-weight:500;letter-spacing:.02em;color:var(--fibra-2);
+  }
+  .selo i{width:7px;height:7px;border-radius:50%;background:var(--fermento);display:block;}
+  h1{
+    font-weight:600;font-size:clamp(32px,5.4vw,54px);line-height:1.04;
+    letter-spacing:-.035em;margin:20px 0 14px;max-width:15ch;
+  }
+  h1 em{font-style:normal;color:var(--fermento);}
+  .chamada{max-width:56ch;color:var(--fibra-2);margin:0;font-weight:300;font-size:16.5px;}
+
+  /* ================= grade ================= */
+  .grade{display:grid;grid-template-columns:1.08fr .92fr;gap:40px;padding-top:38px;align-items:start;}
+  @media (max-width:940px){.grade{grid-template-columns:1fr;gap:30px;}}
+
+  .cabecalho-bloco{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    margin-bottom:14px;
+  }
+  .cabecalho-bloco h2{
+    font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--fibra-3);margin:0;
+  }
+  .cabecalho-bloco .marca{font-size:12px;font-weight:500;color:var(--fibra-3);}
+
+  /* ================= linhas de entrada ================= */
+  .linha{
+    background:var(--branco);border:1px solid var(--borda);border-radius:var(--r-card);
+    padding:16px 16px 14px;margin-bottom:12px;position:relative;
+    box-shadow:var(--sombra);
+    transition:border-color .18s ease;
+  }
+  .linha:focus-within{border-color:var(--fermento);}
+  .linha-campos{display:grid;grid-template-columns:1fr 138px;gap:12px;align-items:end;}
+  @media (max-width:520px){.linha-campos{grid-template-columns:1fr;}}
+
+  .campo{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .campo > label{
+    font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--fibra-3);
+  }
+  select,input[type=number]{
+    font-family:var(--fonte);font-size:14.5px;font-weight:400;color:var(--fibra);
+    background:var(--nevoa);border:1px solid var(--borda);border-radius:var(--r-campo);
+    padding:11px 12px;width:100%;min-width:0;appearance:none;
+  }
+  select{
+    background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%237A8880' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;background-size:11px;
+    padding-right:32px;cursor:pointer;
+  }
+  input[type=number]{text-align:right;font-weight:500;font-variant-numeric:tabular-nums;}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  select:focus-visible,input:focus-visible,button:focus-visible{
+    outline:2px solid var(--chama);outline-offset:2px;
+  }
+
+  .remover{
+    position:absolute;top:12px;right:12px;
+    width:26px;height:26px;border-radius:50%;
+    border:1px solid transparent;background:transparent;color:var(--fibra-3);
+    font-size:15px;line-height:1;cursor:pointer;padding:0;
+  }
+  .remover:hover{background:#F6E6E4;border-color:#EBCFCB;color:var(--alerta);}
+
+  .saida-linha{
+    display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;
+    margin-top:13px;padding-top:12px;border-top:1px solid var(--casca);
+    font-size:12.5px;color:var(--fibra-2);
+  }
+  .tag{
+    display:inline-flex;align-items:baseline;gap:5px;
+    background:var(--nevoa);border-radius:var(--r-pill);padding:4px 11px;
+    font-weight:400;
+  }
+  .tag b{font-weight:600;color:var(--fibra);font-variant-numeric:tabular-nums;}
+  .tag.fator{background:var(--casca);color:var(--fibra-2);}
+  .saida-linha .erro{color:var(--alerta);font-weight:500;}
+  .medida{flex:1 0 100%;margin-top:3px;height:4px;background:var(--casca);border-radius:var(--r-pill);overflow:hidden;}
+  .medida > i{display:block;height:100%;background:var(--fermento);border-radius:var(--r-pill);transition:width .3s ease;}
+
+  .acoes{display:flex;flex-wrap:wrap;gap:9px;padding-top:6px;}
+  .botao{
+    font-family:var(--fonte);font-size:13.5px;font-weight:500;
+    padding:10px 18px;border-radius:var(--r-pill);cursor:pointer;
+    border:1px solid var(--fibra);background:var(--fibra);color:var(--nevoa);
+    transition:transform .12s ease, background .18s ease;
+  }
+  .botao:hover{background:#16211C;}
+  .botao:active{transform:translateY(1px);}
+  .botao.secundario{background:transparent;color:var(--fibra-2);border-color:var(--borda);}
+  .botao.secundario:hover{background:var(--branco);color:var(--fibra);border-color:var(--fibra-3);}
+
+  /* ================= parâmetros do modelo ================= */
+  .modelo{
+    margin-top:26px;background:var(--branco);border:1px solid var(--borda);
+    border-radius:var(--r-card);padding:18px 18px 16px;box-shadow:var(--sombra);
+  }
+  .modelo > summary{
+    list-style:none;cursor:pointer;display:flex;justify-content:space-between;
+    align-items:center;gap:12px;
+  }
+  .modelo > summary::-webkit-details-marker{display:none;}
+  .modelo > summary h2{
+    font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--fibra-3);margin:0;
+  }
+  .travado{
+    font-size:11px;font-weight:500;color:var(--fermento);
+    background:#E8F2EA;border-radius:var(--r-pill);padding:3px 11px;white-space:nowrap;
+  }
+  .fixos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0 0;}
+  .fixo{background:var(--nevoa);border-radius:12px;padding:12px 13px;}
+  .fixo dt{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fibra-3);margin:0;}
+  .fixo dd{font-size:19px;font-weight:600;margin:4px 0 0;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  .fixo dd span{font-size:11px;font-weight:400;color:var(--fibra-3);margin-left:5px;letter-spacing:0;}
+  .nota-modelo{font-size:12.5px;color:var(--fibra-2);margin:14px 0 0;font-weight:300;}
+
+  /* ================= painel de resultado ================= */
+  .painel{position:sticky;top:26px;}
+  @media (max-width:940px){.painel{position:static;}}
+
+  /* coluna de conversão — elemento-assinatura */
+  .coluna{
+    background:linear-gradient(168deg,#26362E 0%,#1A2621 100%);
+    color:#EAF0E9;border-radius:var(--r-card);padding:24px 22px 22px;
+    box-shadow:0 20px 40px -28px rgba(20,32,26,.75);
+  }
+  .coluna-topo{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+    color:#8FA095;margin-bottom:20px;
+  }
+  .coluna-topo span:last-child{
+    background:rgba(255,255,255,.07);border-radius:var(--r-pill);
+    padding:3px 11px;letter-spacing:.04em;text-transform:none;font-weight:500;color:#C3D2C6;
+  }
+  .no{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;}
+  .junta{
+    width:11px;height:11px;border-radius:50%;
+    border:2px solid #55695D;background:#1E2A25;
+  }
+  .no-nome{font-size:11.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#93A498;}
+  .no-valor{font-size:clamp(22px,4vw,30px);font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+  .no-valor small{font-size:11px;font-weight:400;letter-spacing:.04em;color:#8FA095;margin-left:6px;}
+  .no.ativo .junta{border-color:var(--fermento);background:var(--fermento);}
+  .no.ch4.ativo .junta{border-color:#7E9DEF;background:#7E9DEF;}
+  .no.energia.ativo .junta{border-color:var(--brasa);background:var(--brasa);}
+  .no.energia .no-valor{color:#F2C177;}
+
+  .tubo{
+    display:flex;align-items:center;gap:10px;
+    margin:2px 0 2px 5px;padding:7px 0 7px 19px;
+    border-left:2px solid #3A4B42;
+    font-size:12px;color:#8FA095;
+  }
+  .tubo em{
+    font-style:normal;background:rgba(255,255,255,.08);border-radius:var(--r-pill);
+    padding:2px 10px;color:#DDE7DE;font-weight:500;font-variant-numeric:tabular-nums;
+  }
+
+  /* cards anuais */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .card{
+    background:var(--branco);border:1px solid var(--borda);border-radius:12px;
+    padding:14px 15px 12px;
+  }
+  .card-rot{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--fibra-3);}
+  .card-val{font-size:21px;font-weight:600;margin-top:4px;letter-spacing:-.025em;font-variant-numeric:tabular-nums;}
+  .card-val span{font-size:11px;font-weight:400;color:var(--fibra-3);margin-left:5px;letter-spacing:0;}
+
+  /* composição */
+  .composicao{
+    margin-top:14px;background:var(--branco);border:1px solid var(--borda);
+    border-radius:var(--r-card);padding:18px;box-shadow:var(--sombra);
+  }
+  .fita{
+    display:flex;height:12px;border-radius:var(--r-pill);overflow:hidden;
+    background:var(--casca);margin-bottom:14px;
+  }
+  .fita > i{display:block;height:100%;transition:width .3s ease;}
+  .legenda{display:flex;flex-direction:column;gap:9px;}
+  .leg{display:grid;grid-template-columns:9px 1fr auto;align-items:center;gap:10px;font-size:13px;}
+  .leg u{width:9px;height:9px;border-radius:3px;display:block;text-decoration:none;}
+  .leg b{font-weight:600;font-variant-numeric:tabular-nums;}
+  .vazio{color:var(--fibra-3);font-size:13px;font-weight:300;margin:0;}
+
+  /* ================= rodapé ================= */
+  .notas{
+    margin-top:46px;padding-top:30px;border-top:1px solid var(--borda);
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:30px;
+  }
+  .notas h3{font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--fibra-3);margin:0 0 10px;}
+  .notas p{font-size:13.5px;color:var(--fibra-2);margin:0 0 8px;font-weight:300;}
+  .notas ul{margin:0;padding:0;list-style:none;}
+  .notas li{
+    font-size:13.5px;color:var(--fibra-2);font-weight:300;
+    display:flex;justify-content:space-between;gap:12px;
+    padding:6px 0;border-bottom:1px solid var(--casca);
+  }
+  .notas li b{font-weight:600;color:var(--fibra);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .notas li i{font-style:normal;font-size:11px;color:var(--fibra-3);display:block;}
+  .limite{border-left:2px solid var(--brasa);padding-left:14px;}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+<div class="envolucro">
+
+  <header class="topo">
+    <div class="selo"><i></i> Estimativa preliminar de triagem</div>
+    <h1>Quanto <em>biogás</em> cabe no seu resíduo</h1>
+    <p class="chamada">
+      Informe a massa gerada por mês. A calculadora aplica os fatores de rendimento da metodologia
+      e devolve biogás, metano e energia equivalente — o suficiente para decidir se vale seguir
+      para um estudo detalhado.
+    </p>
+  </header>
+
+  <div class="grade">
+
+    <!-- ============ ENTRADAS ============ -->
+    <section aria-labelledby="rot-entradas">
+      <div class="cabecalho-bloco">
+        <h2 id="rot-entradas">Resíduos gerados</h2>
+        <span class="marca">toneladas por mês</span>
+      </div>
+
+      <div id="linhas"></div>
+
+      <div class="acoes">
+        <button type="button" class="botao" id="btn-add">Adicionar resíduo</button>
+        <button type="button" class="botao secundario" id="btn-exemplo">Carregar exemplo</button>
+        <button type="button" class="botao secundario" id="btn-limpar">Limpar quantidades</button>
+      </div>
+
+      <details class="modelo" open>
+        <summary>
+          <h2>Parâmetros do modelo</h2>
+          <span class="travado">somente leitura</span>
+        </summary>
+        <dl class="fixos" id="painel-fixos"></dl>
+        <p class="nota-modelo">
+          Fatores e premissas são constantes desta metodologia e não podem ser editados aqui —
+          é o que mantém os resultados comparáveis entre operações. Caracterização própria do
+          substrato exige estudo dedicado.
+        </p>
+      </details>
+    </section>
+
+    <!-- ============ RESULTADO ============ -->
+    <aside class="painel" aria-labelledby="rot-resultado">
+      <div class="cabecalho-bloco">
+        <h2 id="rot-resultado">Resultado mensal</h2>
+        <span class="marca" id="sel-status">—</span>
+      </div>
+
+      <div class="coluna">
+        <div class="coluna-topo"><span>Cadeia de conversão</span><span id="e-fator">fator médio —</span></div>
+
+        <div class="no" id="no-residuo">
+          <span class="junta"></span>
+          <span class="no-nome">Resíduo</span>
+          <span class="no-valor num" id="t-residuo">—<small>t/mês</small></span>
+        </div>
+        <div class="tubo">× fator fixo por tipo de resíduo</div>
+
+        <div class="no" id="no-biogas">
+          <span class="junta"></span>
+          <span class="no-nome">Biogás</span>
+          <span class="no-valor num" id="t-biogas">—<small>Nm³/mês</small></span>
+        </div>
+        <div class="tubo">× <em id="e-ch4">0,60</em> de CH₄</div>
+
+        <div class="no ch4" id="no-metano">
+          <span class="junta"></span>
+          <span class="no-nome">Metano</span>
+          <span class="no-valor num" id="t-metano">—<small>Nm³/mês</small></span>
+        </div>
+        <div class="tubo">biogás × <em id="e-kwh">6</em> kWh/Nm³</div>
+
+        <div class="no energia" id="no-energia">
+          <span class="junta"></span>
+          <span class="no-nome">Energia</span>
+          <span class="no-valor num" id="t-energia">—<small>kWh/mês</small></span>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card"><div class="card-rot">Biogás / ano</div><div class="card-val num" id="c-biogas-ano">—<span>Nm³</span></div></div>
+        <div class="card"><div class="card-rot">Metano / ano</div><div class="card-val num" id="c-metano-ano">—<span>Nm³</span></div></div>
+        <div class="card"><div class="card-rot">Energia / mês</div><div class="card-val num" id="c-mwh-mes">—<span>MWh</span></div></div>
+        <div class="card"><div class="card-rot">Energia / ano</div><div class="card-val num" id="c-mwh-ano">—<span>MWh</span></div></div>
+      </div>
+
+      <div class="composicao">
+        <div class="cabecalho-bloco">
+          <h2>Composição do biogás</h2>
+          <span class="marca">por resíduo</span>
+        </div>
+        <div class="fita" id="fita" aria-hidden="true"></div>
+        <div class="legenda" id="comp"></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="notas">
+    <div>
+      <h3>Fatores aplicados</h3>
+      <ul id="lista-fatores"></ul>
+    </div>
+    <div>
+      <h3>Como ler o resultado</h3>
+      <p>Os valores representam potencial teórico de geração, sem descontar perdas de coleta,
+         eficiência do biodigestor ou rendimento do motogerador.</p>
+      <p>A energia expressa o conteúdo energético do biogás. A energia elétrica efetiva depende
+         da tecnologia de conversão adotada.</p>
+    </div>
+    <div>
+      <h3>Limites de uso</h3>
+      <p class="limite">Ferramenta de triagem. Não substitui caracterização laboratorial do
+         substrato nem ensaio de potencial bioquímico de metano (BMP) para dimensionar planta.</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ================= MOTOR DE CÁLCULO ================= -->
+<!-- Idêntico ao arquivo biogas-engine.js. Em produção, substitua este bloco por
+     <script src="biogas-engine.js"></script> ou pelo import do módulo. -->
+<script>
+/*!
+ * biogas-engine.js — Motor de cálculo da calculadora simples de biogás
+ * Escopo: resíduos sólidos/orgânicos (estimativa preliminar de triagem)
+ *
+ * Baseado em Calculadora_Biogas.xlsx (abas "Calculadora", "Fatores", "Estrutura").
+ * Cadeia de conversão implementada:
+ *   biogás  (Nm³/mês) = quantidade (t/mês) × fator do resíduo (Nm³/t)
+ *   metano  (Nm³/mês) = biogás × fração de CH₄ (0,60)
+ *   energia (kWh/mês) = biogás × 6 kWh/Nm³
+ *   energia (MWh/mês) = energia (kWh/mês) ÷ 1000
+ *   valores anuais    = valores mensais × 12
+ *
+ * FATORES BLOQUEADOS
+ * ------------------
+ * O catálogo de fatores e as premissas de conversão são constantes do modelo.
+ * A API pública NÃO aceita fator nem premissa vindos da chamada: qualquer campo
+ * `fator` na entrada é ignorado e reportado em `avisos` (código FATOR_IGNORADO).
+ * Catálogo e premissas são congelados (Object.freeze), então também não podem ser
+ * alterados por referência em tempo de execução.
+ *
+ * A única forma de operar com outro conjunto é `criarCalculadora({...})`, decisão de
+ * quem integra o motor no código — nunca do usuário final da interface.
+ *
+ * Sem dependências. Funciona como ESM, CommonJS ou global (window.BiogasEngine).
+ * Versão 1.1.0
+ */
+(function (raiz, fabrica) {
+  'use strict';
+  var api = fabrica();
+  if (typeof module === 'object' && module.exports) {
+    module.exports = api;
+    module.exports.default = api;
+  } else if (typeof define === 'function' && define.amd) {
+    define(function () { return api; });
+  } else {
+    raiz.BiogasEngine = api;
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  var VERSAO = '1.1.0';
+
+  /* ------------------------------------------------------------------ *
+   * 1. Premissas fixas do modelo                                        *
+   * ------------------------------------------------------------------ */
+
+  var PREMISSAS_PADRAO = {
+    fracaoMetano: 0.60,          // fração volumétrica de CH₄ no biogás
+    energiaPorNm3Biogas: 6,      // kWh por Nm³ de biogás
+    mesesPorAno: 12,
+    precisao: 6                  // casas decimais internas (evita ruído de ponto flutuante)
+  };
+
+  /* ------------------------------------------------------------------ *
+   * 2. Catálogo de fatores fixos (aba "Fatores")                        *
+   * ------------------------------------------------------------------ */
+
+  var CATALOGO_FATORES = [
+    {
+      id: 'organico_alimentos',
+      rotulo: 'Resíduo orgânico de alimentos',
+      unidadeEntrada: 't/mês',
+      fator: 91.7,
+      unidadeFator: 'Nm³/t',
+      fonte: 'EPE',
+      observacao: 'Usar quando a empresa informa massa de resíduo orgânico separado. ' +
+                  'Estimativa preliminar baseada na fração orgânica.'
+    },
+    {
+      id: 'vegetal_poda',
+      rotulo: 'Resíduos vegetais / poda',
+      unidadeEntrada: 't/mês',
+      fator: 40,
+      unidadeFator: 'Nm³/t',
+      fonte: 'Embrapa',
+      observacao: 'Usar para poda, folhas, restos vegetais e biomassa vegetal em triagem inicial.'
+    },
+    {
+      id: 'esterco_bovino',
+      rotulo: 'Esterco bovino fresco',
+      unidadeEntrada: 't/mês',
+      fator: 38,
+      unidadeFator: 'Nm³/t',
+      fonte: 'Embrapa',
+      observacao: 'Usar para massa mensal de esterco/dejeto bovino fresco.'
+    },
+    {
+      id: 'dejeto_suino',
+      rotulo: 'Dejetos suínos frescos',
+      unidadeEntrada: 't/mês',
+      fator: 79,
+      unidadeFator: 'Nm³/t',
+      fonte: 'Embrapa',
+      observacao: 'Usar para massa mensal de dejetos suínos.'
+    },
+    {
+      id: 'dejeto_aves',
+      rotulo: 'Dejetos/esterco de aves',
+      unidadeEntrada: 't/mês',
+      fator: 50,
+      unidadeFator: 'Nm³/t',
+      fonte: 'Embrapa',
+      observacao: 'Usar para massa mensal de dejetos/esterco de aves em estimativa preliminar.'
+    }
+  ];
+
+  /* ------------------------------------------------------------------ *
+   * 3. Utilitários internos                                             *
+   * ------------------------------------------------------------------ */
+
+  function clonar(valor) {
+    return JSON.parse(JSON.stringify(valor));
+  }
+
+  /** Congela em profundidade: o catálogo publicado não pode ser alterado em runtime. */
+  function congelar(valor) {
+    if (valor && typeof valor === 'object' && !Object.isFrozen(valor)) {
+      Object.getOwnPropertyNames(valor).forEach(function (chave) {
+        congelar(valor[chave]);
+      });
+      Object.freeze(valor);
+    }
+    return valor;
+  }
+
+  function ehNumeroFinito(valor) {
+    return typeof valor === 'number' && isFinite(valor);
+  }
+
+  /** Aceita 1234.56, "1234.56", "1.234,56" e "1234,56". */
+  function paraNumero(valor) {
+    if (ehNumeroFinito(valor)) return valor;
+    if (typeof valor !== 'string') return NaN;
+    var texto = valor.trim();
+    if (texto === '') return NaN;
+    if (texto.indexOf(',') > -1) {
+      texto = texto.replace(/\./g, '').replace(',', '.');
+    }
+    var n = Number(texto);
+    return isFinite(n) ? n : NaN;
+  }
+
+  function arredondar(valor, casas) {
+    if (!ehNumeroFinito(valor)) return 0;
+    var f = Math.pow(10, casas);
+    return Math.round((valor + Number.EPSILON) * f) / f;
+  }
+
+  /** Remove acentos e caixa, para casar rótulos digitados de forma livre. */
+  function normalizar(texto) {
+    return String(texto == null ? '' : texto)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+  }
+
+  function mesclarPremissas(premissas) {
+    var base = {};
+    Object.keys(PREMISSAS_PADRAO).forEach(function (chave) {
+      base[chave] = PREMISSAS_PADRAO[chave];
+    });
+    if (premissas) {
+      Object.keys(PREMISSAS_PADRAO).forEach(function (chave) {
+        var n = paraNumero(premissas[chave]);
+        if (ehNumeroFinito(n) && n >= 0) base[chave] = n;
+      });
+    }
+    return base;
+  }
+
+  /** Busca por id ou por rótulo (tolerante a acento e caixa). */
+  function obterTipoEm(catalogo, referencia) {
+    var alvo = normalizar(referencia);
+    if (!alvo) return null;
+    for (var i = 0; i < catalogo.length; i++) {
+      if (normalizar(catalogo[i].id) === alvo || normalizar(catalogo[i].rotulo) === alvo) {
+        return catalogo[i];
+      }
+    }
+    return null;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 4. Cálculo de um item                                               *
+   * ------------------------------------------------------------------ *
+   * `contexto` é montado apenas por criarCalculadora() — nunca pela chamada.
+   */
+
+  function calcularItem(entrada, contexto) {
+    var premissas = contexto.premissas;
+    var catalogo = contexto.catalogo;
+    var dados = entrada || {};
+    var erros = [];
+    var avisos = [];
+
+    var tipo = obterTipoEm(catalogo, dados.tipo);
+
+    /* --- fator: travado no catálogo --- */
+    var fatorInformado = paraNumero(dados.fator);
+    var tentouSobrescrever = dados.fator != null && dados.fator !== '';
+    var fatorPersonalizado = false;
+    var fator = tipo ? tipo.fator : NaN;
+
+    if (tentouSobrescrever) {
+      if (contexto.permitirFatorPersonalizado && ehNumeroFinito(fatorInformado) && fatorInformado >= 0) {
+        fatorPersonalizado = true;
+        fator = fatorInformado;
+      } else {
+        avisos.push({
+          campo: 'fator',
+          codigo: 'FATOR_IGNORADO',
+          mensagem: 'O fator é fixo pelo modelo e não pode ser alterado. Foi usado o valor do catálogo.'
+        });
+      }
+    }
+
+    if (!tipo) {
+      erros.push({
+        campo: 'tipo',
+        codigo: 'TIPO_DESCONHECIDO',
+        mensagem: 'Tipo de resíduo não encontrado no catálogo de fatores fixos.'
+      });
+    }
+
+    var quantidade = paraNumero(dados.quantidade);
+    if (!ehNumeroFinito(quantidade)) {
+      erros.push({
+        campo: 'quantidade',
+        codigo: 'QUANTIDADE_INVALIDA',
+        mensagem: 'Informe a quantidade mensal em toneladas.'
+      });
+      quantidade = 0;
+    } else if (quantidade < 0) {
+      erros.push({
+        campo: 'quantidade',
+        codigo: 'QUANTIDADE_NEGATIVA',
+        mensagem: 'A quantidade não pode ser negativa.'
+      });
+      quantidade = 0;
+    }
+
+    var valido = erros.length === 0;
+    var p = premissas.precisao;
+
+    var biogasMes = valido ? arredondar(quantidade * fator, p) : 0;
+    var metanoMes = arredondar(biogasMes * premissas.fracaoMetano, p);
+    var energiaKwhMes = arredondar(biogasMes * premissas.energiaPorNm3Biogas, p);
+    var energiaMwhMes = arredondar(energiaKwhMes / 1000, p);
+    var m = premissas.mesesPorAno;
+
+    return {
+      id: dados.id != null ? dados.id : (tipo ? tipo.id : 'desconhecido'),
+      tipo: tipo ? tipo.id : (dados.tipo != null ? String(dados.tipo) : null),
+      rotulo: tipo ? tipo.rotulo : (dados.tipo != null ? String(dados.tipo) : 'Resíduo não identificado'),
+      fonte: tipo ? tipo.fonte : null,
+      observacao: tipo ? tipo.observacao : null,
+
+      quantidade: quantidade,
+      unidadeEntrada: tipo ? tipo.unidadeEntrada : 't/mês',
+      fator: ehNumeroFinito(fator) ? fator : 0,
+      unidadeFator: tipo ? tipo.unidadeFator : 'Nm³/t',
+      fatorPersonalizado: fatorPersonalizado,
+
+      biogasNm3Mes: biogasMes,
+      biogasNm3Ano: arredondar(biogasMes * m, p),
+      metanoNm3Mes: metanoMes,
+      metanoNm3Ano: arredondar(metanoMes * m, p),
+      energiaKwhMes: energiaKwhMes,
+      energiaKwhAno: arredondar(energiaKwhMes * m, p),
+      energiaMwhMes: energiaMwhMes,
+      energiaMwhAno: arredondar(energiaMwhMes * m, p),
+
+      participacaoBiogas: 0, // preenchido no cálculo do conjunto
+      valido: valido,
+      erros: erros,
+      avisos: avisos
+    };
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 5. Cálculo do conjunto                                              *
+   * ------------------------------------------------------------------ */
+
+  function calcularConjunto(entradas, contexto) {
+    var premissas = contexto.premissas;
+    var lista = Array.isArray(entradas) ? entradas : (entradas ? [entradas] : []);
+    var p = premissas.precisao;
+
+    var itens = lista.map(function (entrada, indice) {
+      var item = calcularItem(entrada, contexto);
+      item.indice = indice;
+      return item;
+    });
+
+    var totais = {
+      quantidade: 0,
+      biogasNm3Mes: 0, biogasNm3Ano: 0,
+      metanoNm3Mes: 0, metanoNm3Ano: 0,
+      energiaKwhMes: 0, energiaKwhAno: 0,
+      energiaMwhMes: 0, energiaMwhAno: 0
+    };
+
+    itens.forEach(function (item) {
+      if (!item.valido) return;
+      Object.keys(totais).forEach(function (chave) {
+        totais[chave] += item[chave];
+      });
+    });
+
+    Object.keys(totais).forEach(function (chave) {
+      totais[chave] = arredondar(totais[chave], p);
+    });
+
+    itens.forEach(function (item) {
+      item.participacaoBiogas = totais.biogasNm3Mes > 0
+        ? arredondar(item.biogasNm3Mes / totais.biogasNm3Mes, p)
+        : 0;
+    });
+
+    var erros = [];
+    var avisos = [];
+    itens.forEach(function (item) {
+      item.erros.forEach(function (erro) {
+        erros.push({ indice: item.indice, id: item.id, campo: erro.campo, codigo: erro.codigo, mensagem: erro.mensagem });
+      });
+      item.avisos.forEach(function (aviso) {
+        avisos.push({ indice: item.indice, id: item.id, campo: aviso.campo, codigo: aviso.codigo, mensagem: aviso.mensagem });
+      });
+    });
+
+    return {
+      versao: VERSAO,
+      premissas: clonar(premissas),
+      fatoresBloqueados: !contexto.permitirFatorPersonalizado,
+      itens: itens,
+      totais: totais,
+      valido: erros.length === 0,
+      erros: erros,
+      avisos: avisos
+    };
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 6. Instância (única porta de configuração)                          *
+   * ------------------------------------------------------------------ *
+   * Config é decisão de integração, avaliada uma vez na construção.
+   * Os métodos da instância não aceitam opções — o usuário final não tem
+   * como injetar fator nem premissa por chamada.
+   *
+   *   var calc = BiogasEngine.criarCalculadora({
+   *     catalogo: fatoresDoBanco,               // opcional
+   *     premissas: { fracaoMetano: 0.55 },      // opcional
+   *     permitirFatorPersonalizado: true        // opcional, padrão false
+   *   });
+   */
+
+  function criarCalculadora(config) {
+    config = config || {};
+
+    var catalogo = congelar(
+      Array.isArray(config.catalogo) && config.catalogo.length
+        ? clonar(config.catalogo)
+        : clonar(CATALOGO_FATORES)
+    );
+    var premissas = congelar(mesclarPremissas(config.premissas));
+    var permitir = config.permitirFatorPersonalizado === true;
+
+    var contexto = congelar({
+      catalogo: catalogo,
+      premissas: premissas,
+      permitirFatorPersonalizado: permitir
+    });
+
+    return {
+      versao: VERSAO,
+      fatoresBloqueados: !permitir,
+      premissas: clonar(premissas),
+      listarTipos: function () { return clonar(catalogo); },
+      obterTipo: function (referencia) {
+        var tipo = obterTipoEm(catalogo, referencia);
+        return tipo ? clonar(tipo) : null;
+      },
+      calcularItem: function (entrada) { return calcularItem(entrada, contexto); },
+      calcular: function (entradas) { return calcularConjunto(entradas, contexto); }
+    };
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 7. Formatação (opcional — a UI pode usar a sua própria)             *
+   * ------------------------------------------------------------------ */
+
+  function formatarNumero(valor, casas, local) {
+    if (!ehNumeroFinito(valor)) return '—';
+    casas = casas == null ? 0 : casas;
+    try {
+      return new Intl.NumberFormat(local || 'pt-BR', {
+        minimumFractionDigits: casas,
+        maximumFractionDigits: casas
+      }).format(valor);
+    } catch (e) {
+      return valor.toFixed(casas);
+    }
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 8. API pública — instância padrão, com fatores travados             *
+   * ------------------------------------------------------------------ */
+
+  congelar(PREMISSAS_PADRAO);
+  congelar(CATALOGO_FATORES);
+
+  var padrao = criarCalculadora();
+
+  return {
+    VERSAO: VERSAO,
+    PREMISSAS_PADRAO: PREMISSAS_PADRAO,
+    CATALOGO_FATORES: CATALOGO_FATORES,
+    fatoresBloqueados: true,
+
+    // Não aceitam opções: fator e premissa não entram por chamada.
+    listarTipos: padrao.listarTipos,
+    obterTipo: padrao.obterTipo,
+    calcularItem: padrao.calcularItem,
+    calcular: padrao.calcular,
+
+    criarCalculadora: criarCalculadora,
+    utils: {
+      paraNumero: paraNumero,
+      arredondar: arredondar,
+      normalizar: normalizar,
+      formatarNumero: formatarNumero
+    }
+  };
+});
+
+</script>
+
+<!-- ================= INTERFACE ================= -->
+<script>
+(function () {
+  'use strict';
+
+  var motor = window.BiogasEngine;
+  var fmt = motor.utils.formatarNumero;
+  var TIPOS = motor.listarTipos();
+  var CORES = ['#2F7D4F', '#5FA36C', '#2F5BD8', '#DA8412', '#7A8880'];
+
+  var estado = { linhas: [] };
+  var seq = 0;
+
+  var elLinhas = document.getElementById('linhas');
+  var elComp = document.getElementById('comp');
+  var elFita = document.getElementById('fita');
+
+  function corDoTipo(id) {
+    for (var i = 0; i < TIPOS.length; i++) if (TIPOS[i].id === id) return CORES[i % CORES.length];
+    return CORES[CORES.length - 1];
+  }
+
+  function novaLinha(tipo, quantidade) {
+    return {
+      chave: 'l' + (++seq),
+      tipo: tipo || TIPOS[0].id,
+      quantidade: quantidade == null ? '' : String(quantidade)
+    };
+  }
+
+  /* ---------- render das linhas ---------- */
+  function renderLinhas() {
+    elLinhas.innerHTML = '';
+    estado.linhas.forEach(function (linha) {
+      var div = document.createElement('div');
+      div.className = 'linha';
+      div.dataset.chave = linha.chave;
+
+      var opcoes = TIPOS.map(function (t) {
+        return '<option value="' + t.id + '"' + (t.id === linha.tipo ? ' selected' : '') + '>' + t.rotulo + '</option>';
+      }).join('');
+
+      div.innerHTML =
+        '<div class="linha-campos">' +
+          '<div class="campo"><label for="tipo-' + linha.chave + '">Tipo de resíduo</label>' +
+            '<select id="tipo-' + linha.chave + '" data-campo="tipo">' + opcoes + '</select></div>' +
+          '<div class="campo"><label for="qtd-' + linha.chave + '">Quantidade (t/mês)</label>' +
+            '<input id="qtd-' + linha.chave + '" type="number" min="0" step="any" placeholder="0" ' +
+            'data-campo="quantidade" value="' + linha.quantidade + '"></div>' +
+        '</div>' +
+        '<button type="button" class="remover" data-acao="remover" aria-label="Remover resíduo">&times;</button>' +
+        '<div class="saida-linha" data-saida></div>';
+
+      elLinhas.appendChild(div);
+    });
+  }
+
+  /* ---------- cálculo + pintura ---------- */
+  function recalcular() {
+    var entradas = estado.linhas.map(function (linha) {
+      return {
+        id: linha.chave,
+        tipo: linha.tipo,
+        quantidade: linha.quantidade === '' ? 0 : linha.quantidade
+      };
+    });
+
+    // Sem opções: fator e premissas vêm travados do motor.
+    var r = motor.calcular(entradas);
+    var preenchido = r.totais.biogasNm3Mes > 0;
+
+    /* saída por linha */
+    r.itens.forEach(function (item) {
+      var div = elLinhas.querySelector('[data-chave="' + item.id + '"]');
+      if (!div) return;
+      var saida = div.querySelector('[data-saida]');
+
+      if (!item.valido) {
+        saida.innerHTML = '<span class="erro">' + item.erros[0].mensagem + '</span>';
+        return;
+      }
+      saida.innerHTML =
+        '<span class="tag fator">fator <b>' + fmt(item.fator, item.fator % 1 ? 1 : 0) + '</b> ' + item.unidadeFator + '</span>' +
+        '<span class="tag">biogás <b>' + fmt(item.biogasNm3Mes, 0) + '</b> Nm³/mês</span>' +
+        '<span class="tag">CH₄ <b>' + fmt(item.metanoNm3Mes, 0) + '</b> Nm³</span>' +
+        '<span class="tag">energia <b>' + fmt(item.energiaMwhMes, 2) + '</b> MWh</span>' +
+        '<span class="medida"><i style="width:' + (item.participacaoBiogas * 100).toFixed(1) +
+          '%;background:' + corDoTipo(item.tipo) + '"></i></span>';
+    });
+
+    /* coluna de conversão */
+    var t = r.totais;
+    no('no-residuo', 't-residuo', preenchido ? fmt(t.quantidade, 1) : '—', 't/mês', preenchido);
+    no('no-biogas', 't-biogas', preenchido ? fmt(t.biogasNm3Mes, 0) : '—', 'Nm³/mês', preenchido);
+    no('no-metano', 't-metano', preenchido ? fmt(t.metanoNm3Mes, 0) : '—', 'Nm³/mês', preenchido);
+    no('no-energia', 't-energia', preenchido ? fmt(t.energiaKwhMes, 0) : '—', 'kWh/mês', preenchido);
+
+    document.getElementById('e-ch4').textContent = fmt(r.premissas.fracaoMetano, 2);
+    document.getElementById('e-kwh').textContent = fmt(r.premissas.energiaPorNm3Biogas, 0);
+    document.getElementById('e-fator').textContent = preenchido
+      ? 'fator médio ' + fmt(t.biogasNm3Mes / t.quantidade, 1) + ' Nm³/t'
+      : 'fator médio —';
+
+    /* cards */
+    card('c-biogas-ano', preenchido ? fmt(t.biogasNm3Ano, 0) : '—', 'Nm³');
+    card('c-metano-ano', preenchido ? fmt(t.metanoNm3Ano, 0) : '—', 'Nm³');
+    card('c-mwh-mes', preenchido ? fmt(t.energiaMwhMes, 2) : '—', 'MWh');
+    card('c-mwh-ano', preenchido ? fmt(t.energiaMwhAno, 1) : '—', 'MWh');
+
+    var contribuintes = r.itens.filter(function (i) { return i.valido && i.biogasNm3Mes > 0; })
+      .sort(function (a, b) { return b.biogasNm3Mes - a.biogasNm3Mes; });
+
+    document.getElementById('sel-status').textContent =
+      preenchido ? contribuintes.length + (contribuintes.length > 1 ? ' resíduos' : ' resíduo') : '—';
+
+    /* composição */
+    if (!contribuintes.length) {
+      elFita.innerHTML = '';
+      elComp.innerHTML = '<p class="vazio">Informe ao menos uma quantidade para ver a composição.</p>';
+    } else {
+      elFita.innerHTML = contribuintes.map(function (i) {
+        return '<i style="width:' + (i.participacaoBiogas * 100).toFixed(2) + '%;background:' +
+               corDoTipo(i.tipo) + '"></i>';
+      }).join('');
+      elComp.innerHTML = contribuintes.map(function (i) {
+        return '<div class="leg"><u style="background:' + corDoTipo(i.tipo) + '"></u>' +
+               '<span>' + i.rotulo + '</span><b>' + fmt(i.participacaoBiogas * 100, 1) + '%</b></div>';
+      }).join('');
+    }
+  }
+
+  function no(idNo, idValor, valor, unidade, ativo) {
+    document.getElementById(idValor).innerHTML = valor + '<small>' + unidade + '</small>';
+    document.getElementById(idNo).classList.toggle('ativo', !!ativo);
+  }
+  function card(id, valor, unidade) {
+    document.getElementById(id).innerHTML = valor + '<span>' + unidade + '</span>';
+  }
+
+  /* ---------- eventos ---------- */
+  elLinhas.addEventListener('input', function (ev) {
+    var campo = ev.target.dataset.campo;
+    if (!campo) return;
+    var chave = ev.target.closest('.linha').dataset.chave;
+    var linha = estado.linhas.filter(function (l) { return l.chave === chave; })[0];
+    if (!linha) return;
+    linha[campo] = ev.target.value;
+    recalcular();
+  });
+
+  elLinhas.addEventListener('change', function (ev) {
+    if (ev.target.dataset.campo !== 'tipo') return;
+    var chave = ev.target.closest('.linha').dataset.chave;
+    var linha = estado.linhas.filter(function (l) { return l.chave === chave; })[0];
+    linha.tipo = ev.target.value;
+    recalcular();
+  });
+
+  elLinhas.addEventListener('click', function (ev) {
+    if (ev.target.dataset.acao !== 'remover') return;
+    var chave = ev.target.closest('.linha').dataset.chave;
+    estado.linhas = estado.linhas.filter(function (l) { return l.chave !== chave; });
+    if (!estado.linhas.length) estado.linhas.push(novaLinha());
+    renderLinhas();
+    recalcular();
+  });
+
+  document.getElementById('btn-add').addEventListener('click', function () {
+    var usados = estado.linhas.map(function (l) { return l.tipo; });
+    var livre = TIPOS.filter(function (t) { return usados.indexOf(t.id) === -1; })[0];
+    estado.linhas.push(novaLinha(livre ? livre.id : TIPOS[0].id));
+    renderLinhas();
+    recalcular();
+  });
+
+  document.getElementById('btn-exemplo').addEventListener('click', function () {
+    estado.linhas = TIPOS.map(function (t) { return novaLinha(t.id, 10); });
+    renderLinhas();
+    recalcular();
+  });
+
+  document.getElementById('btn-limpar').addEventListener('click', function () {
+    estado.linhas.forEach(function (l) { l.quantidade = ''; });
+    renderLinhas();
+    recalcular();
+  });
+
+  /* ---------- parâmetros do modelo (somente leitura) ---------- */
+  (function () {
+    var pr = motor.PREMISSAS_PADRAO;
+    var fixos = [
+      { rot: 'Fração de CH₄', val: fmt(pr.fracaoMetano, 2), un: 'do biogás' },
+      { rot: 'Energia do biogás', val: fmt(pr.energiaPorNm3Biogas, 0), un: 'kWh/Nm³' },
+      { rot: 'Meses por ano', val: fmt(pr.mesesPorAno, 0), un: 'meses' },
+      { rot: 'Fatores de resíduo', val: String(TIPOS.length), un: 'travados' }
+    ];
+    document.getElementById('painel-fixos').innerHTML = fixos.map(function (f) {
+      return '<div class="fixo"><dt>' + f.rot + '</dt><dd>' + f.val + '<span>' + f.un + '</span></dd></div>';
+    }).join('');
+  })();
+
+  /* ---------- rodapé de fatores ---------- */
+  document.getElementById('lista-fatores').innerHTML = TIPOS.map(function (t) {
+    return '<li><span>' + t.rotulo + '<i>' + t.fonte + '</i></span><b>' +
+           String(t.fator).replace('.', ',') + ' ' + t.unidadeFator + '</b></li>';
+  }).join('');
+
+  /* ---------- início ---------- */
+  estado.linhas.push(novaLinha(TIPOS[0].id));
+  renderLinhas();
+  recalcular();
+})();
+</script>
+</body>
+</html>

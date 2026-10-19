@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Atlas do Gás Renovável & Calculadora</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
+            width: 100%;
+            min-height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #004515;
+            /* Tom verde sustentável */
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            flex: 1;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+            display: block;
+        }
+
+        /* Divisória visual entre as duas telas */
+        .container iframe:first-child {
+            border-bottom: 2px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        Atlas do Gás Renovável Ceará & Calculadora de Biogás
+    </header>
+
+    <div class="container">
+        <!-- Lado Esquerdo: ArcGIS StoryMaps -->
+        <iframe src="https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7"
+            title="Atlas do Gás Renovável Ceará"></iframe>
+
+        <!-- Lado Direito: Calculadora Local -->
+        <iframe src="calculadora-biogas.html" title="Calculadora de Biogás"></iframe>
+    </div>
+
+</body>
+
+</html>

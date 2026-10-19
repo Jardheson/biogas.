@@ -1,0 +1,16 @@
+services:
+  biogas-panel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: observatorio-biogas:latest
+    container_name: biogas-panel
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
