@@ -2,7 +2,7 @@
 
 Aplicação web conteinerizada (Docker + Nginx) que serve uma página única com o
 **[Atlas do Gás Renovável Ceará](https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7)**
-e a **calculadora de biogás**, no mesmo fluxo de rolagem.
+embutido em `iframe` e a **calculadora de biogás** em um modal sobreposto.
 
 ---
 
@@ -30,13 +30,12 @@ e a **calculadora de biogás**, no mesmo fluxo de rolagem.
 
 | Arquivo | Descrição | Atalho |
 |---|---|---|
-| [calculadora-biogas.html](calculadora-biogas.html) | Página principal: capa do atlas + calculadora (só marcação) | [abrir](calculadora-biogas.html) |
+| [calculadora-biogas.html](calculadora-biogas.html) | Página principal: StoryMaps em `iframe`, faixa institucional e modal da calculadora (só marcação) | [abrir](calculadora-biogas.html) |
 | [index.html](index.html) | Redireciona `/` para a página principal | [abrir](index.html) |
-| [css/estilo.css](css/estilo.css) | Todo o estilo, incluindo os breakpoints responsivos | [abrir](css/estilo.css) |
+| [css/estilo.css](css/estilo.css) | Estilo, breakpoints responsivos, mídias de acessibilidade e suporte a `safe-area` | [abrir](css/estilo.css) |
 | [js/biogas-engine.js](js/biogas-engine.js) | Motor de cálculo puro (v1.1.0), sem dependências | [abrir](js/biogas-engine.js) |
 | [js/app.js](js/app.js) | Interface: linhas de entrada, cálculo e pintura do resultado | [abrir](js/app.js) |
-| [js/atlas-modal.js](js/atlas-modal.js) | Modal do atlas (abrir/fechar, foco preso, `Esc`) | [abrir](js/atlas-modal.js) |
-| [assets/ceara.png](assets/ceara.png) | Capa fixa do atlas | [abrir](assets/ceara.png) |
+| [js/calc-modal.js](js/calc-modal.js) | Modal da calculadora (abrir/fechar, foco preso, `Esc`, fundo `inert`) | [abrir](js/calc-modal.js) |
 | [assets/rodape.png](assets/rodape.png) | Faixa institucional do rodapé | [abrir](assets/rodape.png) |
 | [nginx.conf](nginx.conf) | Servidor (gzip, cache, headers de segurança) | [abrir](nginx.conf) |
 | [Dockerfile](Dockerfile) | Build da imagem (nginx + arquivos + healthcheck) | [abrir](Dockerfile) |
@@ -57,9 +56,8 @@ biogas/
 ├── js/
 │   ├── biogas-engine.js
 │   ├── app.js
-│   └── atlas-modal.js
+│   └── calc-modal.js
 ├── assets/
-│   ├── ceara.png
 │   └── rodape.png
 ├── nginx.conf
 ├── Dockerfile
@@ -89,11 +87,17 @@ apenas com marcação — sem CSS nem JavaScript inline.
 
 Fluxo da página [calculadora-biogas.html](calculadora-biogas.html):
 
-1. **Capa do atlas** — `assets/ceara.png` fixa na seção, sem rolagem própria.
-2. **Botão `Abrir atlas`** — abre o [StoryMaps](https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7) em um modal sobreposto.
-3. **Link `Ver atlas completo`** — abre o StoryMaps em nova aba.
-4. **Calculadora** — resíduos, parâmetros do modelo e resultado mensal/anual.
-5. **Rodapé** — fatores aplicados, como ler o resultado, limites de uso e faixa institucional.
+1. **Atlas embutido** — o [StoryMaps](https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7)
+   é carregado em um `iframe` que ocupa a área principal da viewport.
+2. **Botão `Abrir calculadora`** — abre a calculadora em um **modal** sobreposto,
+   sem sair da página.
+3. **Modal da calculadora** — resíduos, parâmetros do modelo e resultado mensal/anual;
+   fecha com `Esc`, com o botão `Fechar` ou com clique no fundo.
+4. **Faixa institucional** — `assets/rodape.png`, ancorada ao final da página.
+
+A página usa layout de coluna flexível com `min-height:100dvh`: cabeçalho + atlas (`flex:1`) +
+faixa, de modo que a viewport é preenchida sem rolagem dupla. O atlas é o único elemento
+elástico — ele cresce ou encolhe conforme a tela.
 
 > A raiz `/` serve [index.html](index.html), que é apenas um redirecionamento para
 > [calculadora-biogas.html](calculadora-biogas.html).
@@ -110,8 +114,8 @@ Fluxo da página [calculadora-biogas.html](calculadora-biogas.html):
                      │    ├── index.html            (redireciona) │
                      │    ├── calculadora-biogas.html             │
                      │    ├── css/estilo.css                      │
-                     │    ├── js/{biogas-engine,app,atlas-modal}  │
-                     │    └── assets/{ceara,rodape}.png           │
+                     │    ├── js/{biogas-engine,app,calc-modal}   │
+                     │    └── assets/rodape.png                   │
                      │                                            │
                      │  /etc/nginx/conf.d/default.conf            │
                      │    (= nginx.conf)                          │
@@ -121,8 +125,8 @@ Fluxo da página [calculadora-biogas.html](calculadora-biogas.html):
                                         │
                     ┌───────────────────┴───────────────────┐
                     ▼                                       ▼
-   assets/ceara.png (local, capa fixa)      iframe StoryMaps (só no modal)
-   css/estilo.css · js/*.js (local)         origem externa — Esri
+   css/estilo.css · js/*.js · rodape.png    iframe StoryMaps (área principal,
+   (local, mesma origem)                    `loading="lazy"`) — origem Esri
 ```
 
 ### Ordem de carregamento dos scripts
@@ -132,7 +136,7 @@ Declarados no fim do `<body>`, nesta ordem — [js/app.js](js/app.js) depende de
 
 1. [js/biogas-engine.js](js/biogas-engine.js) — publica a API (global, CommonJS ou AMD)
 2. [js/app.js](js/app.js) — lê `window.BiogasEngine` e monta a interface
-3. [js/atlas-modal.js](js/atlas-modal.js) — controla o modal do atlas
+3. [js/calc-modal.js](js/calc-modal.js) — controla o modal da calculadora
 
 ### O motor de cálculo
 
@@ -162,7 +166,7 @@ decisão de quem integra o motor no código — não do usuário final da interf
 - Docker Compose v2 (comando `docker compose`, sem hífen)
 - [`curl`](https://curl.se/) (usado pela suíte de testes e pelo healthcheck)
 - O **navegador do usuário final** precisa alcançar:
-  - [storymaps.arcgis.com](https://storymaps.arcgis.com) (conteúdo do modal do atlas)
+  - [storymaps.arcgis.com](https://storymaps.arcgis.com) (conteúdo do atlas embutido)
   - `fonts.googleapis.com` / `fonts.gstatic.com` (fonte Poppins)
 
 ---
@@ -238,7 +242,7 @@ chmod +x test.sh
 
 | # | Teste | Valida | Resultado esperado |
 |---|-------|--------|--------------------|
-| T1 | Pre-flight | Existência dos 10 arquivos obrigatórios | Todos `OK` |
+| T1 | Pre-flight | Existência dos 9 arquivos obrigatórios | Todos `OK` |
 | T2 | Compose válido | Sintaxe do [docker-compose.yml](docker-compose.yml) | Sem erro |
 | T3 | Build | Construção da imagem a partir do [Dockerfile](Dockerfile) | `Built` |
 | T4 | Subir container | `docker compose up -d` | `Started` |
@@ -247,7 +251,7 @@ chmod +x test.sh
 | T7 | Redirecionamento | [index.html](index.html) aponta para a calculadora | `OK` |
 | T8 | Calculadora | `GET /calculadora-biogas.html` + link do StoryMaps | `200` + `OK` |
 | T9 | CSS e JS | `GET` de [css/estilo.css](css/estilo.css) e dos 3 scripts | `200` (4×) |
-| T10 | Imagens | `GET` de [assets/ceara.png](assets/ceara.png) e [assets/rodape.png](assets/rodape.png) | `200` (2×) |
+| T10 | Imagens | `GET` de [assets/rodape.png](assets/rodape.png) | `200` |
 | T11 | Healthcheck | `.State.Health.Status` | `healthy` |
 | T12 | Headers de segurança | `X-Content-Type-Options` em `/`, `.html` e `.css` | `OK` (3×) |
 | T13 | Embed StoryMaps | Cabeçalhos `frame-ancestors` / `X-Frame-Options` da Esri | Informativo |
@@ -255,8 +259,8 @@ chmod +x test.sh
 ### Resultado medido (última execução)
 
 ```
-T1 OK (10 arquivos) · T2 OK · T3 Built · T4 Started · T5 syntax is ok
-T6 200 · T7 OK · T8 200 + StoryMaps OK · T9 200 (4×) · T10 200 (2×)
+T1 OK (9 arquivos) · T2 OK · T3 Built · T4 Started · T5 syntax is ok
+T6 200 · T7 OK · T8 200 + StoryMaps OK · T9 200 (4×) · T10 200 (1×)
 T11 healthy · T12 OK (3×) · T13 frame-ancestors https: http: 'self'
 ```
 
@@ -293,12 +297,12 @@ Presentes em **todas** as rotas (verificado em T12):
 - `Referrer-Policy: strict-origin-when-cross-origin`
 
 > **Não** é enviado `X-Frame-Options` restritivo — a página não é enquadrada por ninguém e
-> restringir o header poderia interferir no embed do StoryMaps dentro do modal.
+> restringir o header poderia interferir no embed do StoryMaps dentro da página.
 
 ### Conteúdo copiado para a imagem
 
 Verificado com `docker exec biogas-panel find /usr/share/nginx/html -type f` — a imagem contém
-exatamente 8 arquivos:
+exatamente 7 arquivos:
 
 ```
 /usr/share/nginx/html/index.html
@@ -306,8 +310,7 @@ exatamente 8 arquivos:
 /usr/share/nginx/html/css/estilo.css
 /usr/share/nginx/html/js/biogas-engine.js
 /usr/share/nginx/html/js/app.js
-/usr/share/nginx/html/js/atlas-modal.js
-/usr/share/nginx/html/assets/ceara.png
+/usr/share/nginx/html/js/calc-modal.js
 /usr/share/nginx/html/assets/rodape.png
 ```
 
@@ -325,30 +328,34 @@ Transferência medida na página principal (bytes):
 
 | Recurso | Em disco | Com gzip |
 |---|---:|---:|
-| [calculadora-biogas.html](calculadora-biogas.html) | 8.078 | 2.595 |
-| [css/estilo.css](css/estilo.css) | 16.980 | 4.737 |
-| [js/biogas-engine.js](js/biogas-engine.js) | 14.868 | 4.312 |
-| [js/app.js](js/app.js) | 9.460 | 2.889 |
-| [js/atlas-modal.js](js/atlas-modal.js) | 1.574 | 589 |
-| **Total** | **50.960** | **15.122** |
+| [calculadora-biogas.html](calculadora-biogas.html) | 7.012 | 2.130 |
+| [css/estilo.css](css/estilo.css) | 18.638 | 5.149 |
+| [js/biogas-engine.js](js/biogas-engine.js) | 14.868 | 4.302 |
+| [js/app.js](js/app.js) | 9.504 | 2.907 |
+| [js/calc-modal.js](js/calc-modal.js) | 1.854 | 703 |
+| **Total** | **51.876** | **15.191** |
 
 O CSS e os três scripts são servidos com cache de 7 dias: na segunda visita o navegador baixa
-apenas o HTML (~2,6 KB comprimidos). Em troca, a **primeira** visita transfere mais bytes do que
+apenas o HTML (~2,1 KB comprimidos). Em troca, a **primeira** visita transfere mais bytes do que
 um HTML monolítico transferia — a separação ganha em cache e manutenção, não na carga inicial.
+
+A `assets/rodape.png` e o `iframe` do StoryMaps ficam fora dessa conta: a faixa é estática
+(imagem, já comprimida) e o atlas é conteúdo de origem externa, carregado com `loading="lazy"`.
 
 ---
 
 ## Decisões de engenharia e limitações conhecidas
 
-### 1. A capa do atlas é uma imagem local, não o embed do StoryMaps
+### 1. O atlas é o conteúdo principal da página, embutido em `iframe`
 
-A seção do atlas exibe [assets/ceara.png](assets/ceara.png) — uma imagem fixa, sem rolagem
-própria. O StoryMaps completo só é carregado **quando o usuário abre o modal**, via `data-src`,
-o que evita baixar o conteúdo externo em quem não pede.
+A seção do atlas carrega o [StoryMaps](https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7)
+diretamente em um `iframe` com `loading="lazy"`, que ocupa a área elástica do layout (`flex:1`)
+e cresce ou encolhe conforme a tela.
 
 **Limite conhecido:** por ser conteúdo de origem cruzada, não é possível controlar nem remover a
-rolagem interna do StoryMaps de dentro desta página. Fazer a página ter "apenas um scroll" exige
-substituir o embed por conteúdo local — decisão de produto, não de código.
+rolagem interna do StoryMaps de dentro desta página. A página em si não rola — o layout é uma
+coluna flexível de `100dvh` em que apenas o `iframe` varia de altura; a faixa institucional fica
+ancorada no fim.
 
 ### 2. Embed do StoryMaps é permitido
 
@@ -365,7 +372,7 @@ x-frame-options: SAMEORIGIN
   presentes o `frame-ancestors` **prevalece** e o `X-Frame-Options` é ignorado por navegadores
   modernos.
 
-**Conclusão:** o modal funciona em navegadores modernos. Navegadores muito antigos (que só
+**Conclusão:** o embed funciona em navegadores modernos. Navegadores muito antigos (que só
 entendem `X-Frame-Options`) bloqueiam.
 
 ### 3. `HEALTHCHECK` do Dockerfile pode ser descartado com driver `docker-container`
@@ -410,17 +417,69 @@ O `immutable` também foi descartado de propósito: os arquivos **não** têm ha
 `immutable` o navegador manteria `css/estilo.css` e `js/*.js` antigos por até 7 dias após um
 deploy, mesmo com recarga. Sem ele, a recarga revalida e pega a versão nova.
 
-### 6. Acessibilidade: `h1` só para leitores de tela
+### 6. Acessibilidade
 
-A página tem um `h1` — `Atlas do gás renovável Ceará e calculadora de biogás` — mas ele usa a classe
-`.sr-only`, então **não aparece visualmente**. Isso mantém o desenho atual, que começa direto pela
-seção do atlas, e ao mesmo tempo dá à página um título de nível 1 para leitores de tela e
-verificadores de acessibilidade.
+A página e o modal implementam, em código:
 
-O `<header>` original continua **comentado** em
-[calculadora-biogas.html](calculadora-biogas.html#L22-L29), com o selo
-`Atlas + estimativa preliminar de triagem` que foi restaurado a pedido. Se ele for reativado,
-será preciso remover o `h1` `sr-only` para não haver dois `h1` na página.
+- **Navegação por teclado** — *skip link* `.pular` como primeiro elemento focável, apontando
+  para `#conteudo` (`main` com `tabindex="-1"`).
+- **Título de nível 1** — `h1` com a classe `.sr-only`: dá título semântico à página para
+  leitores de tela sem alterar o desenho visual, que começa direto pela seção do atlas.
+- **Modal** ([js/calc-modal.js](js/calc-modal.js)) — `role="dialog"`, `aria-modal="true"`,
+  `aria-labelledby`; o botão de abertura declara `aria-haspopup="dialog"` e `aria-controls`.
+  Ao abrir, o foco vai para o botão `Fechar`; `Tab`/`Shift+Tab` ficam presos dentro do modal;
+  `Esc`, o botão `Fechar` e o clique no fundo encerram; ao fechar, o foco **volta** ao elemento
+  que abriu o modal.
+- **Fundo inerte** — com o modal aberto, `.envolucro` e `.pular` recebem `inert` **e**
+  `aria-hidden="true"`, de modo que o conteúdo de trás sai da árvore de acessibilidade e da
+  ordem de tabulação.
+- **Resultado anunciado** — `<p role="status" aria-live="polite">` recebe, a cada recálculo, uma
+  frase com os totais em toneladas, Nm³ e MWh. A barra visual `.fita` é `aria-hidden="true"`
+  porque a mesma informação está na legenda textual.
+- **Foco visível** — `:focus-visible` com contorno de 2 px (`outline-offset:2px`) em links,
+  botões, `select`, `input`, `summary` e `[tabindex]`.
+- **Alvos de toque ≥ 44×44 px** (WCAG 2.5.5) — `a`, `button`, `summary`, `select` e `input`
+  têm `min-height:44px`. O botão `.remover` é visualmente 36×36, mas tem a área de toque
+  ampliada para 44×44 por um `::after` com `inset:-4px`.
+- **Preferências do sistema** — `@media (prefers-contrast:more)` escurece os cinzas, engrossa
+  as bordas para 2 px e clareia as superfícies; `@media (forced-colors:active)` usa
+  `CanvasText`/`ButtonText`/`Canvas`; `@media (prefers-reduced-motion:reduce)` desliga
+  transições, animações e a rolagem suave.
+- **Sem armadilha de zoom** — o `<meta viewport>` não fixa `maximum-scale`, e em telas ≤ 640 px
+  os campos passam a `font-size:16px`, o que evita o zoom automático do iOS Safari ao focar.
+
+### 7. Responsividade
+
+O layout é uma coluna flexível de `min-height:100dvh` em que apenas o `iframe` do atlas é
+elástico (`flex:1`). As margens laterais saem de uma variável única, `--gutter`, cujo padrão é
+`clamp(12px,1.5vw,40px)` e que é reduzida conforme a largura:
+
+| Faixa de largura | `--gutter` |
+|---|---|
+| Base (fluido) | `clamp(12px,1.5vw,40px)` |
+| 768–1024 px (tablet) | `24px` |
+| ≤ 640 px | `18px` |
+| ≤ 420 px | `14px` |
+| ≤ 360 px | `12px` |
+
+Cada valor é combinado com `max(..., env(safe-area-inset-left/right))`, então a margem nunca fica
+menor que a área segura de aparelhos com entalhe. O mesmo vale para o topo e a base do
+`.envolucro` e para o `padding` do modal.
+
+Breakpoints, em [css/estilo.css](css/estilo.css):
+
+- `940px` — grade do modal passa de 2 colunas para 1; o painel de resultado deixa de ser *sticky*.
+- `920px` — cabeçalho do atlas empilha; botão ocupa a largura toda; modal em tela cheia
+  (`border-radius:0`) usando as *safe areas*.
+- `760px` — blocos de notas em coluna única.
+- `640px` — *gutter* 18 px, campos com 16 px (anti-zoom), fundo sem `background-attachment:fixed`.
+- `520px` — par `tipo`/`quantidade` de cada linha passa a uma coluna.
+- `420px` — cards anuais em coluna única; botões em pilha, largura total.
+- `360px` — *gutter* 12 px; grade de parâmetros em 2 colunas fixas.
+- `max-height:540px` — celular deitado: esconde o texto de apoio do topo, limita a faixa
+  institucional a 56 px de altura e comprime o corpo do modal, preservando a área útil do atlas.
+- `1600 / 1920 / 2400px` — TVs: `body` em 16,5 px a partir de 1600 px e 19 px a partir de
+  2400 px; micro-rótulos ampliados em 1920 px (12,5 px) e 2400 px (13,5 px).
 
 ---
 
@@ -431,9 +490,10 @@ será preciso remover o `h1` `sr-only` para não haver dois `h1` na página.
 | `docker build` falha com `nginx.conf: no such file` | [nginx.conf](nginx.conf) ausente | Recriar o arquivo e rebuildar |
 | Porta 8080 já em uso | Outro processo/container | `HOST_PORT=9000 docker compose up -d` |
 | Página sem estilo ou sem cálculo | `css/estilo.css` ou `js/*.js` não copiados | `docker compose up -d --build` e conferir T9 |
-| Imagem do atlas/rodapé quebrada | `assets/` fora da imagem | Conferir T10 |
-| Modal do atlas em branco | Story tornado privado na Esri | Verificar o compartilhamento do [story](https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7) |
+| Faixa institucional quebrada | `assets/` fora da imagem | Conferir T10 |
+| Atlas em branco | Story tornado privado na Esri | Verificar o compartilhamento do [story](https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7) |
 | `iframe` "This page won't open in a frame" | Cabeçalhos de bloqueio mudaram na Esri | Rodar [T13](#testes) e reavaliar |
+| Modal da calculadora não abre | [js/calc-modal.js](js/calc-modal.js) não carregou ou o botão saiu do DOM | Conferir o Console do navegador e o T9 |
 | Fontes diferentes | `fonts.googleapis.com` inacessível | Sem impacto funcional (fallback para `sans-serif`) |
 | Container `unhealthy` | nginx não responde internamente | `docker compose logs biogas-panel` |
 | Outro computador não acessa pelo IP local | Firewall do host ou redes diferentes | Liberar porta (`ufw allow 8080/tcp`) |
@@ -459,7 +519,7 @@ curl -sI http://localhost:8080/ | head -1
 
 - A porta publicada deve estar acessível aos usuários finais.
 - O **navegador do usuário** precisa alcançar
-  [storymaps.arcgis.com](https://storymaps.arcgis.com) (ao abrir o modal) e
+  [storymaps.arcgis.com](https://storymaps.arcgis.com) (para exibir o atlas embutido) e
   `fonts.googleapis.com` / `fonts.gstatic.com` (fonte Poppins).
 - HTTPS é recomendado na borda (proxy reverso / balanceador). O container fala **HTTP na 80**;
   termine o TLS no proxy.
@@ -486,8 +546,9 @@ automaticamente após reboot ou falha, exceto se parado manualmente.
 - [ ] `docker ps` mostra `biogas-panel` como `Up (healthy)`
 - [ ] `/` retorna `200` e redireciona
 - [ ] `GET /calculadora-biogas.html` retorna `200`
-- [ ] Capa do atlas, calculadora e rodapé aparecem corretamente
-- [ ] Modal do atlas abre, fecha com `Esc` e devolve o foco
+- [ ] Atlas embutido carrega e a faixa institucional aparece no fim da página
+- [ ] Modal da calculadora abre, calcula, fecha com `Esc` e devolve o foco ao botão
+- [ ] Layout conferido em celular (retrato e paisagem), tablet, desktop e TV
 - [ ] Headers de segurança presentes em `/`, `.html` e `.css`
 
 ### Manutenção

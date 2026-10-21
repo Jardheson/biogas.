@@ -6,11 +6,11 @@
   <meta name="description" content="Atlas do Gás Renovável Ceará com calculadora de estimativa preliminar de biogás, metano e energia a partir dos resíduos gerados.">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#F1F4EE">
-  <title>Painel - Atlas do Gás Renovável & Calculadora</title>
+  <title>Painel - Atlas do Gás Renovável &amp; Calculadora</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/estilo.css?v=6">
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo principal</a>
@@ -19,168 +19,140 @@
 
     <h1 class="sr-only">Atlas do gás renovável Ceará e calculadora de biogás</h1>
 
-    <!-- <header class="topo">
-      <div class="selo"><i></i> Atlas + estimativa preliminar de triagem</div>
-      <h1>Atlas do gás renovável e calculadora em uma <em>única página</em></h1>
-      <p class="chamada">
-        Consulte o atlas, role a mesma página e estime o potencial mensal de biogás, metano e energia
-        a partir dos resíduos gerados, sem trocar de tela.
-      </p>
-    </header> -->
-
-    <section class="atlas" aria-labelledby="rot-atlas">
-      <div class="atlas-card">
-        <div class="atlas-topo">
-          <div>
-            <h2 id="rot-atlas">Atlas do Gás Renovável Ceará</h2>
-            <p>A imagem do atlas fica fixa nesta seção. Use os botões para abrir o atlas completo.</p>
+    <main id="conteudo" tabindex="-1">
+      <section class="atlas" aria-labelledby="rot-atlas">
+        <div class="atlas-card">
+          <div class="atlas-topo">
+            <div>
+              <h2 id="rot-atlas">Atlas do Gás Renovável Ceará</h2>
+              <p>Consulte o atlas nesta mesma página e abra a calculadora para estimar biogás, metano e energia.</p>
+            </div>
+            <div class="atlas-acoes">
+              <button type="button" class="atlas-link" id="btn-calc-abrir" aria-haspopup="dialog" aria-controls="calc-modal">Abrir calculadora</button>
+            </div>
           </div>
-          <div class="atlas-acoes">
-            <button type="button" class="atlas-link secundario" id="btn-atlas-abrir" aria-haspopup="dialog">Abrir atlas</button>
-            <a class="atlas-link" href="https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7" target="_blank" rel="noopener noreferrer">Ver atlas completo<span class="sr-only"> (abre em nova aba)</span></a>
-          </div>
+          <iframe
+            class="atlas-frame"
+            src="https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7"
+            title="Atlas do Gás Renovável Ceará"
+            loading="lazy"
+            allowfullscreen></iframe>
         </div>
-        <img
-          class="atlas-frame"
-          src="assets/ceara.png"
-          alt="Atlas do Gás Renovável Ceará"
-          loading="lazy">
-      </div>
-    </section>
-
-    <main class="grade" id="conteudo" tabindex="-1">
-
-      <!-- ============ ENTRADAS ============ -->
-      <section aria-labelledby="rot-entradas">
-        <div class="cabecalho-bloco">
-          <h2 id="rot-entradas">Resíduos gerados</h2>
-          <span class="marca">toneladas por mês</span>
-        </div>
-
-        <div id="linhas"></div>
-
-        <div class="acoes">
-          <button type="button" class="botao" id="btn-add">Adicionar resíduo</button>
-          <button type="button" class="botao secundario" id="btn-exemplo">Carregar exemplo</button>
-          <button type="button" class="botao secundario" id="btn-limpar">Limpar quantidades</button>
-        </div>
-
-        <details class="modelo" open>
-          <summary>
-            <h2>Parâmetros do modelo</h2>
-            <span class="travado">somente leitura</span>
-          </summary>
-          <dl class="fixos" id="painel-fixos"></dl>
-          <p class="nota-modelo">
-            Fatores e premissas são constantes desta metodologia e não podem ser editados aqui —
-            é o que mantém os resultados comparáveis entre operações. Caracterização própria do
-            substrato exige estudo dedicado.
-          </p>
-        </details>
       </section>
-
-      <!-- ============ RESULTADO ============ -->
-      <aside class="painel" aria-labelledby="rot-resultado">
-        <div class="cabecalho-bloco">
-          <h2 id="rot-resultado">Resultado mensal</h2>
-          <span class="marca" id="sel-status">—</span>
-        </div>
-
-        <div class="coluna">
-          <div class="coluna-topo"><span>Cadeia de conversão</span><span id="e-fator">fator médio —</span></div>
-
-          <div class="no" id="no-residuo">
-            <span class="junta"></span>
-            <span class="no-nome">Resíduo</span>
-            <span class="no-valor num" id="t-residuo">—<small>t/mês</small></span>
-          </div>
-          <div class="tubo">× fator fixo por tipo de resíduo</div>
-
-          <div class="no" id="no-biogas">
-            <span class="junta"></span>
-            <span class="no-nome">Biogás</span>
-            <span class="no-valor num" id="t-biogas">—<small>Nm³/mês</small></span>
-          </div>
-          <div class="tubo">× <em id="e-ch4">0,60</em> de CH₄</div>
-
-          <div class="no ch4" id="no-metano">
-            <span class="junta"></span>
-            <span class="no-nome">Metano</span>
-            <span class="no-valor num" id="t-metano">—<small>Nm³/mês</small></span>
-          </div>
-          <div class="tubo">biogás × <em id="e-kwh">6</em> kWh/Nm³</div>
-
-          <div class="no energia" id="no-energia">
-            <span class="junta"></span>
-            <span class="no-nome">Energia</span>
-            <span class="no-valor num" id="t-energia">—<small>kWh/mês</small></span>
-          </div>
-        </div>
-
-        <div class="cards">
-          <div class="card"><div class="card-rot">Biogás / ano</div><div class="card-val num" id="c-biogas-ano">—<span>Nm³</span></div></div>
-          <div class="card"><div class="card-rot">Metano / ano</div><div class="card-val num" id="c-metano-ano">—<span>Nm³</span></div></div>
-          <div class="card"><div class="card-rot">Energia / mês</div><div class="card-val num" id="c-mwh-mes">—<span>MWh</span></div></div>
-          <div class="card"><div class="card-rot">Energia / ano</div><div class="card-val num" id="c-mwh-ano">—<span>MWh</span></div></div>
-        </div>
-
-        <div class="composicao">
-          <div class="cabecalho-bloco">
-            <h2>Composição do biogás</h2>
-            <span class="marca">por resíduo</span>
-          </div>
-          <div class="fita" id="fita" aria-hidden="true"></div>
-          <div class="legenda" id="comp"></div>
-        </div>
-
-        <p class="sr-only" role="status" aria-live="polite" id="anuncio"></p>
-      </aside>
     </main>
-
-    <footer class="notas">
-      <div>
-        <h3>Fatores aplicados</h3>
-        <ul id="lista-fatores"></ul>
-      </div>
-      <div>
-        <h3>Como ler o resultado</h3>
-        <p>Os valores representam potencial teórico de geração, sem descontar perdas de coleta,
-           eficiência do biodigestor ou rendimento do motogerador.</p>
-        <p>A energia expressa o conteúdo energético do biogás. A energia elétrica efetiva depende
-           da tecnologia de conversão adotada.</p>
-      </div>
-      <div>
-        <h3>Limites de uso</h3>
-        <p class="limite">Ferramenta de triagem. Não substitui caracterização laboratorial do
-           substrato nem ensaio de potencial bioquímico de metano (BMP) para dimensionar planta.</p>
-      </div>
-    </footer>
 
     <section class="institucional" aria-label="Parceiros institucionais">
       <img
         class="institucional-imagem"
-        src="assets/rodape.png"
+        src="assets/rodape.png?v=2"
         alt="Faixa institucional com Realização e Apoio"
         loading="lazy">
     </section>
   </div>
 
-  <!-- ================= ATLAS EM MODAL ================= -->
-  <div class="atlas-modal" id="atlas-modal" hidden>
-    <div class="atlas-modal-caixa" role="dialog" aria-modal="true" aria-labelledby="atlas-modal-titulo">
+  <!-- ================= CALCULADORA EM MODAL ================= -->
+  <div class="atlas-modal" id="calc-modal" hidden>
+    <div class="atlas-modal-caixa" role="dialog" aria-modal="true" aria-labelledby="calc-modal-titulo">
       <div class="atlas-modal-topo">
-        <h2 id="atlas-modal-titulo">Atlas do Gás Renovável Ceará</h2>
-        <button type="button" class="atlas-modal-fechar" id="btn-atlas-fechar">Fechar</button>
+        <h2 id="calc-modal-titulo">Calculadora de biogás</h2>
+        <button type="button" class="atlas-modal-fechar" id="btn-calc-fechar">Fechar</button>
       </div>
-      <iframe
-        class="atlas-modal-frame"
-        data-src="https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7"
-        title="Atlas do Gás Renovável Ceará"></iframe>
+      <div class="atlas-modal-corpo">
+        <div class="grade">
+
+          <!-- ============ ENTRADAS ============ -->
+          <section aria-labelledby="rot-entradas">
+            <div class="cabecalho-bloco">
+              <h2 id="rot-entradas">Resíduos gerados</h2>
+              <span class="marca">toneladas por mês</span>
+            </div>
+
+            <div id="linhas"></div>
+
+            <div class="acoes">
+              <button type="button" class="botao" id="btn-add">Adicionar resíduo</button>
+              <button type="button" class="botao secundario" id="btn-exemplo">Carregar exemplo</button>
+              <button type="button" class="botao secundario" id="btn-limpar">Limpar quantidades</button>
+            </div>
+
+            <details class="modelo" open>
+              <summary>
+                <h2>Parâmetros do modelo</h2>
+                <span class="travado">somente leitura</span>
+              </summary>
+              <dl class="fixos" id="painel-fixos"></dl>
+              <p class="nota-modelo">
+                Fatores e premissas são constantes desta metodologia e não podem ser editados aqui —
+                é o que mantém os resultados comparáveis entre operações. Caracterização própria do
+                substrato exige estudo dedicado.
+              </p>
+            </details>
+          </section>
+
+          <!-- ============ RESULTADO ============ -->
+          <aside class="painel" aria-labelledby="rot-resultado">
+            <div class="cabecalho-bloco">
+              <h2 id="rot-resultado">Resultado mensal</h2>
+              <span class="marca" id="sel-status">—</span>
+            </div>
+
+            <div class="coluna">
+              <div class="coluna-topo"><span>Cadeia de conversão</span><span id="e-fator">fator médio —</span></div>
+
+              <div class="no" id="no-residuo">
+                <span class="junta"></span>
+                <span class="no-nome">Resíduo</span>
+                <span class="no-valor num" id="t-residuo">—<small>t/mês</small></span>
+              </div>
+              <div class="tubo">× fator fixo por tipo de resíduo</div>
+
+              <div class="no" id="no-biogas">
+                <span class="junta"></span>
+                <span class="no-nome">Biogás</span>
+                <span class="no-valor num" id="t-biogas">—<small>Nm³/mês</small></span>
+              </div>
+              <div class="tubo">× <em id="e-ch4">0,60</em> de CH₄</div>
+
+              <div class="no ch4" id="no-metano">
+                <span class="junta"></span>
+                <span class="no-nome">Metano</span>
+                <span class="no-valor num" id="t-metano">—<small>Nm³/mês</small></span>
+              </div>
+              <div class="tubo">biogás × <em id="e-kwh">6</em> kWh/Nm³</div>
+
+              <div class="no energia" id="no-energia">
+                <span class="junta"></span>
+                <span class="no-nome">Energia</span>
+                <span class="no-valor num" id="t-energia">—<small>kWh/mês</small></span>
+              </div>
+            </div>
+
+            <div class="cards">
+              <div class="card"><div class="card-rot">Biogás / ano</div><div class="card-val num" id="c-biogas-ano">—<span>Nm³</span></div></div>
+              <div class="card"><div class="card-rot">Metano / ano</div><div class="card-val num" id="c-metano-ano">—<span>Nm³</span></div></div>
+              <div class="card"><div class="card-rot">Energia / mês</div><div class="card-val num" id="c-mwh-mes">—<span>MWh</span></div></div>
+              <div class="card"><div class="card-rot">Energia / ano</div><div class="card-val num" id="c-mwh-ano">—<span>MWh</span></div></div>
+            </div>
+
+            <div class="composicao">
+              <div class="cabecalho-bloco">
+                <h2>Composição do biogás</h2>
+                <span class="marca">por resíduo</span>
+              </div>
+              <div class="fita" id="fita" aria-hidden="true"></div>
+              <div class="legenda" id="comp"></div>
+            </div>
+
+            <p class="sr-only" role="status" aria-live="polite" id="anuncio"></p>
+          </aside>
+
+        </div>
+      </div>
     </div>
   </div>
 
-  <script src="js/biogas-engine.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/atlas-modal.js"></script>
+  <script src="js/biogas-engine.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
+  <script src="js/calc-modal.js?v=4"></script>
 </body>
 </html>

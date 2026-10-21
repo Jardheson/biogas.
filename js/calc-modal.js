@@ -1,25 +1,34 @@
 (function () {
   'use strict';
-  var modal = document.getElementById('atlas-modal');
+  var modal = document.getElementById('calc-modal');
   if (!modal) return;
-  var abrir = document.getElementById('btn-atlas-abrir');
-  var fechar = document.getElementById('btn-atlas-fechar');
-  var frame = modal.querySelector('.atlas-modal-frame');
+  var abrir = document.getElementById('btn-calc-abrir');
+  var fechar = document.getElementById('btn-calc-fechar');
+  if (!abrir || !fechar) return;
   var ultimoFoco = null;
+  var fundos = [document.querySelector('.envolucro'), document.querySelector('.pular')].filter(Boolean);
+
+  function travarFundo(travar) {
+    fundos.forEach(function (el) {
+      if (travar) { el.setAttribute('inert', ''); el.setAttribute('aria-hidden', 'true'); }
+      else { el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
+    });
+  }
 
   function focaveis() {
-    return modal.querySelectorAll('button, iframe, a[href], [tabindex]:not([tabindex="-1"])');
+    return modal.querySelectorAll('button, a[href], select, input, [tabindex]:not([tabindex="-1"])');
   }
   function abrirModal() {
     ultimoFoco = document.activeElement;
-    if (frame && !frame.getAttribute('src')) frame.setAttribute('src', frame.getAttribute('data-src'));
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
+    travarFundo(true);
     fechar.focus();
   }
   function fecharModal() {
     modal.hidden = true;
     document.body.style.overflow = '';
+    travarFundo(false);
     if (ultimoFoco && ultimoFoco.focus) ultimoFoco.focus();
   }
 
