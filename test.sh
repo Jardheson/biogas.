@@ -6,7 +6,7 @@ PORTA="${HOST_PORT:-8080}"
 BASE="http://localhost:${PORTA}"
 
 echo "== T1: Pre-flight =="
-for f in Dockerfile nginx.conf index.html calculadora-biogas.html css/estilo.css js/biogas-engine.js js/app.js js/atlas-modal.js assets/ceara.png assets/rodape.png; do
+for f in Dockerfile nginx.conf index.html calculadora-biogas.html css/estilo.css js/biogas-engine.js js/app.js js/calc-modal.js assets/rodape.png; do
   [ -f "$f" ] || { echo "  FALHA: $f ausente"; exit 1; }; echo "  OK: $f"
 done
 
@@ -36,13 +36,13 @@ c=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/calculadora-biogas.html")
 curl -s "$BASE/calculadora-biogas.html" | grep -q "storymaps.arcgis.com" && echo "  OK: link do StoryMaps" || echo "  FALHA: link do StoryMaps ausente"
 
 echo "== T9: CSS e JS servidos =="
-for u in /css/estilo.css /js/biogas-engine.js /js/app.js /js/atlas-modal.js; do
+for u in /css/estilo.css /js/biogas-engine.js /js/app.js /js/calc-modal.js; do
   c=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$u")
   [ "$c" = "200" ] && echo "  OK: $u ($c)" || echo "  FALHA: $u ($c)"
 done
 
 echo "== T10: Imagens servidas =="
-for u in /assets/ceara.png /assets/rodape.png; do
+for u in /assets/rodape.png; do
   c=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$u")
   [ "$c" = "200" ] && echo "  OK: $u ($c)" || echo "  FALHA: $u ($c)"
 done

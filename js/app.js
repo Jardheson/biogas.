@@ -207,7 +207,8 @@
   })();
 
   /* ---------- rodapé de fatores ---------- */
-  document.getElementById('lista-fatores').innerHTML = TIPOS.map(function (t) {
+  var elFatores = document.getElementById('lista-fatores');
+  if (elFatores) elFatores.innerHTML = TIPOS.map(function (t) {
     return '<li><span>' + t.rotulo + '<i>' + t.fonte + '</i></span><b>' +
            String(t.fator).replace('.', ',') + ' ' + t.unidadeFator + '</b></li>';
   }).join('');
