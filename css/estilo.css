@@ -87,7 +87,8 @@ main{flex:1;display:flex;min-height:0;}
 .atlas-modal-corpo{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:34px 26px 60px;}
 .atlas-modal-corpo .grade{padding-top:0;}
 .institucional{margin-top:0;padding:0;background:transparent;border:none;box-shadow:none;border-radius:0;display:flex;justify-content:center;overflow:visible;flex:none;}
-.institucional-imagem{display:block;width:100%;max-width:100%;height:auto;image-rendering:auto;}
+/* largura natural (1244 px): nunca e ampliada, para nao perder nitidez; so encolhe em telas menores */
+.institucional-imagem{display:block;width:auto;max-width:100%;height:auto;image-rendering:auto;}
 @media (max-width:920px){
   .atlas-topo{flex-direction:column;}
   .atlas-acoes{width:100%;}
@@ -351,7 +352,7 @@ select,input[type=number]{min-height:44px;}
 @media (max-height:540px){
   .atlas-topo{padding:10px 14px 8px;}
   .atlas-topo p{display:none;}
-  .institucional-imagem{width:auto;max-height:56px;}
+  .institucional-imagem{max-height:56px;}
   .atlas-modal-topo{padding:10px 14px;}
   .atlas-modal-corpo{padding:18px 14px 40px;}
 }

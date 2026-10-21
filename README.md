@@ -481,6 +481,23 @@ Breakpoints, em [css/estilo.css](css/estilo.css):
 - `1600 / 1920 / 2400px` — TVs: `body` em 16,5 px a partir de 1600 px e 19 px a partir de
   2400 px; micro-rótulos ampliados em 1920 px (12,5 px) e 2400 px (13,5 px).
 
+A faixa institucional ([assets/rodape.png](assets/rodape.png), 1244 × 137 px) é exibida em
+**tamanho natural** (`width:auto` + `max-width:100%`): em telas largas ela **não** é ampliada, o
+que preserva a nitidez, e só é reduzida quando a janela é menor que a imagem. Medido no Chrome
+headless (`getBoundingClientRect`) com o CSS servido:
+
+| Viewport | Renderizado | Escala |
+|---|---|---|
+| 2560 px | 1244 × 137 | 1.000 |
+| 1920 px | 1244 × 137 | 1.000 |
+| 1244 px | 1207 × 133 | 0.970 |
+| 1024 px | 976 × 107 | 0.785 |
+| 768 px | 720 × 79 | 0.579 |
+| 500 px | 464 × 51 | 0.373 |
+
+A escala nunca ultrapassa 1.000 em nenhuma largura testada, ou seja, a faixa jamais é
+interpolada para cima.
+
 ---
 
 ## Troubleshooting
