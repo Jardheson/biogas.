@@ -325,12 +325,12 @@ Transferência medida na página principal (bytes):
 
 | Recurso | Em disco | Com gzip |
 |---|---:|---:|
-| [calculadora-biogas.html](calculadora-biogas.html) | 7.991 | 2.579 |
-| [css/estilo.css](css/estilo.css) | 17.941 | 4.894 |
+| [calculadora-biogas.html](calculadora-biogas.html) | 8.078 | 2.595 |
+| [css/estilo.css](css/estilo.css) | 16.980 | 4.737 |
 | [js/biogas-engine.js](js/biogas-engine.js) | 14.868 | 4.312 |
 | [js/app.js](js/app.js) | 9.460 | 2.889 |
 | [js/atlas-modal.js](js/atlas-modal.js) | 1.574 | 589 |
-| **Total** | **51.834** | **15.263** |
+| **Total** | **50.960** | **15.122** |
 
 O CSS e os três scripts são servidos com cache de 7 dias: na segunda visita o navegador baixa
 apenas o HTML (~2,6 KB comprimidos). Em troca, a **primeira** visita transfere mais bytes do que
@@ -392,14 +392,35 @@ herdado do nível superior se o bloco atual **não** declarar nenhum `add_header
 **silenciosamente descartados** nessa rota. Corrigido replicando os headers de segurança em cada
 bloco `location` do [nginx.conf](nginx.conf).
 
-### 5. `Cache-Control` duplicado nos estáticos (nuance observada, não alterada)
+### 5. `Cache-Control` duplicado nos estáticos (corrigido)
 
-O bloco de estáticos usa `expires 7d` **e** um `add_header Cache-Control "public, max-age=604800,
-immutable"`. O `expires` já emite um `Cache-Control: max-age=604800`, então a resposta sai com
-dois headers `Cache-Control`. Os navegadores combinam os valores e o comportamento é o esperado,
-mas a duplicação é redundante. Não foi alterado porque envolve política de cache — e como os
-arquivos **não** têm hash no nome, o `immutable` faz o navegador manter CSS/JS antigos por até 7
-dias após um deploy. Mudar isso é decisão de produto.
+O bloco de estáticos usava `expires 7d` **e** um `add_header Cache-Control "public, max-age=604800,
+immutable"`. Como o `expires` já emite `Cache-Control: max-age=604800`, a resposta saía com **dois**
+headers `Cache-Control`.
+
+**Correção aplicada:** removido o `add_header Cache-Control` redundante. Agora a resposta traz um
+único header, emitido pelo `expires`:
+
+```
+Expires: <data + 7 dias>
+Cache-Control: max-age=604800
+```
+
+O `immutable` também foi descartado de propósito: os arquivos **não** têm hash no nome, e com
+`immutable` o navegador manteria `css/estilo.css` e `js/*.js` antigos por até 7 dias após um
+deploy, mesmo com recarga. Sem ele, a recarga revalida e pega a versão nova.
+
+### 6. Acessibilidade: `h1` só para leitores de tela
+
+A página tem um `h1` — `Atlas do gás renovável Ceará e calculadora de biogás` — mas ele usa a classe
+`.sr-only`, então **não aparece visualmente**. Isso mantém o desenho atual, que começa direto pela
+seção do atlas, e ao mesmo tempo dá à página um título de nível 1 para leitores de tela e
+verificadores de acessibilidade.
+
+O `<header>` original continua **comentado** em
+[calculadora-biogas.html](calculadora-biogas.html#L22-L29), com o selo
+`Atlas + estimativa preliminar de triagem` que foi restaurado a pedido. Se ele for reativado,
+será preciso remover o `h1` `sr-only` para não haver dois `h1` na página.
 
 ---
 
@@ -416,7 +437,7 @@ dias após um deploy. Mudar isso é decisão de produto.
 | Fontes diferentes | `fonts.googleapis.com` inacessível | Sem impacto funcional (fallback para `sans-serif`) |
 | Container `unhealthy` | nginx não responde internamente | `docker compose logs biogas-panel` |
 | Outro computador não acessa pelo IP local | Firewall do host ou redes diferentes | Liberar porta (`ufw allow 8080/tcp`) |
-| CSS/JS antigos após deploy | `immutable` + nome sem hash | Rebuild e *hard refresh*, ou revisar a política de cache |
+| CSS/JS antigos após deploy | Cache de 7 dias no navegador | Recarregar com `Ctrl+F5`, ou revisar a [política de cache](#5-cache-control-duplicado-nos-estáticos-corrigido) |
 
 ---
 
@@ -484,6 +505,7 @@ automaticamente após reboot ou falha, exceto se parado manualmente.
 - [StoryMaps — Atlas do Gás Renovável Ceará](https://storymaps.arcgis.com/stories/d3476caa5c2944098849a8635c6370f7)
 - [Página principal](calculadora-biogas.html)
 - [Suíte de testes](test.sh)
+- [Repositório no GitHub](https://github.com/Jardheson/biogas) (`origin`)
 
 ### Documentação externa
 
